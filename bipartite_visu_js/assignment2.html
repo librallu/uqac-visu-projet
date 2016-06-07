@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Coursera - Data visualization - Assignment 1</title>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+        }
+
+        svg {
+            border: 1px solid #666;
+        }
+
+        .node {
+            fill: steelblue;
+            stroke: #fff;
+            stroke-width: 1px;
+        }
+
+        .link {
+            stroke: #777;
+            stroke-width: 2px;
+        }
+
+        .tooltip {
+            font-family: sans-serif;
+            background-color: #fff;
+            border: 3px solid #666;
+            border-radius: 10px;
+            line-height: 30px;
+            padding: 10px;
+        }
+
+        .title {
+            font-size: 2em;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <script>
+
+    // Load csv file and call this function when it is done
+    d3.json("lesmis.json", function(data) {
+
+        var width = 1000;
+        var height = 800;
+        var dotsize = 5;
+        var padding = 20;
+        var linkDistance = 120;
+
+        nodes = [];
+        node_size = [];
+        // data normalization for later work
+        for ( var i = 0 ; i < data.nodes.length ; i++ ) {
+            nodes[i] = {
+                'x': Math.random()*(width-padding*2)+padding,
+                'y': Math.random()*(height-padding*2)+padding,
+                'size': dotsize,
+                'name': data.names[i]
+
+            };
+        }
+
+        links = [];
+        for ( var i = 0 ; i < data.edges.length ; i++ ) {
+            links[i] = {
+                'source': data.edges[i].from-1,
+                'target': data.edges[i].to-1
+            }
+            nodes[data.edges[i].from-1].size++;
+        }
+
+        var svg = d3.select('body')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height)
+        ;
+
+        var title = 'coappearances of characters in "Les Miserables"';
+        svg.append('text')
+            .attr('x', width/2)
+            .attr('y', 50)
+            .text(title)
+            .attr('class', 'title')
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#333')
+        ;
+
+        var force = d3.layout.force()
+            .size([width, height])
+            .nodes(nodes)
+            .links(links)
+            .linkDistance(function(link) {
+                var val = 50 + Math.min(link.source.size, link.target.size)*5;
+                return val;
+            })
+            .friction(.6)
+            .charge(function(node) {
+                return -300 - node.size*20;
+            })
+            .chargeDistance(300)
+        ;
+
+        var link = svg.selectAll('.link')
+            .data(links)
+            .enter()
+            .append('line')
+            .attr('class', 'link')
+            .attr('x1', function(d) {console.log(d);return d.source.x; })
+            .attr('y1', function(d) {return d.source.y; })
+            .attr('x2', function(d) {return d.target.x; })
+            .attr('y2', function(d) {return d.target.y; })
+        ;
+
+        var tooltip = d3.select("body")
+            .append("div")
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .attr("class", "tooltip");
+
+        var node = svg.selectAll('.node')
+            .data(nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'node')
+            .attr('r', function(d) { return d.size; })
+            .attr('cx', function(d) { return d.x; })
+            .attr('cy', function(d) { return d.y; })
+            .on('mouseover', function(d) {
+                return tooltip.style("visibility", "visible").html(
+                    d.name+'<br/>nb coappearances: '+d.size
+                );
+            })
+            .on('mousemove', function() {
+                return tooltip
+                    .style("top", (d3.event.pageY-10)+"px")
+                    .style("left",(d3.event.pageX+10)+"px");
+            })
+            .on('mouseout', function() {
+                return tooltip.style("visibility", "hidden");
+            })
+        ;
+
+        var animating = true;
+        var animationStep = 10;
+
+        force.on('tick', function() {
+
+            node.transition()
+                .ease('linear')
+                .duration(animationStep)
+                .attr('cx', function(d) { return d.x; })
+                .attr('cy', function(d) { return d.y; })
+            ;
+
+            node.call(force.drag)
+
+            link.transition()
+                .ease('linear')
+                .duration(animationStep)
+                .attr('x1', function(d) {return d.source.x; })
+                .attr('y1', function(d) {return d.source.y; })
+                .attr('x2', function(d) {return d.target.x; })
+                .attr('y2', function(d) {return d.target.y; })
+
+            force.stop();
+
+            if ( animating ) {
+                setTimeout( function () {
+                    force.start();
+                }, animationStep)
+            };
+
+        });
+
+        force.on('end', function () {
+
+            node.attr('r', function(d) { return d.size; })
+                .attr('cx', function(d) { return d.x; })
+                .attr('cy', function(d) { return d.y; })
+            ;
+
+            link.attr('x1', function(d) {return d.source.x; })
+                .attr('y1', function(d) {return d.source.y; })
+                .attr('x2', function(d) {return d.target.x; })
+                .attr('y2', function(d) {return d.target.y; })
+
+        });
+
+        force.start();
+
+
+    });
+
+    </script>
+</body>
+</html>
