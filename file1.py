@@ -21,7 +21,8 @@ class Data:
 
             for a in f.readlines():
                 fields = [b.replace('\n', '') for b in a.split('\t')]
-                self.data.append(fields)
+                if len(fields) == len(names):
+                    self.data.append(fields)
 
     def get_row(self, i):
         """
