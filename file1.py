@@ -84,7 +84,7 @@ for u,v in edges:
         bipartite[v] = [u]
 
 filename2 = file_name+'_edges_countries.csv'
-with open(filename2, 'w+') as f:
+with open(filename2, 'w+', encoding="utf8") as f:
     f.write("in out\n")
     for i in bipartite:
         if i != "":
