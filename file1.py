@@ -83,6 +83,7 @@ for u,v in edges:
     else:
         bipartite[v] = [u]
 
+
 filename2 = file_name+'_edges_countries.csv'
 with open(filename2, 'w+', encoding="utf8") as f:
     f.write("in out\n")
@@ -91,7 +92,7 @@ with open(filename2, 'w+', encoding="utf8") as f:
             for j in bipartite[i]:
                 f.write('{} {}\n'.format(i,j))
 
-fields = ['product_name', 'packaging', 'additives_fr', 'nutrition-score-fr_100g']
+fields = ['product_name', 'packaging', 'additives_fr', 'nutrition-score-fr_100g', 'allergens']
 missing_value = '#'
 
 filename3 = file_name+'_nodes_countries.csv'
@@ -104,6 +105,7 @@ with open(filename3, 'w', encoding="utf8") as f:
         name = tmp['product_name'] if tmp['product_name'] != '' else missing_value
         additives = tmp['additives_fr'] if tmp['additives_fr'] != '' else missing_value
         score = tmp['nutrition-score-fr_100g'] if tmp['nutrition-score-fr_100g'] != '' else missing_value
-        f.write('{} {} {} {} {} {}\n'.format(indice, name.replace(' ', '-'), packaging.replace(' ', ''), additives.replace(' ', ''), score, 0))
+        allergens = tmp['allergens'] if tmp['allergens'] != '' else missing_value
+        f.write('{} {} {} {} {} {} {}\n'.format(indice, name.replace(' ', '-'), packaging.replace(' ', ''), additives.replace(' ', ''), score, allergens.replace(' ', ''), 0))
     for i in bipartite:
-        f.write('{} {} {} {} {} {}\n'.format(i, "", "", "", "", 1))
+        f.write('{} {} {} {} {} {} {}\n'.format(i, "", "", "", "", "", 1))
